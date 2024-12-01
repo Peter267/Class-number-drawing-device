@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级随机抽号器</title>
+    <!-- 引入Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        #result {
+            font-size: 64px;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            color: #007bff;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .probability-section {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="mb-4">班级随机抽号器</h1>
+
+        <div id="result">?</div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">最小学号</span>
+            </div>
+            <input type="number" id="min" class="form-control" value="1">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">最大学号</span>
+            </div>
+            <input type="number" id="max" class="form-control" value="50">
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <button id="startBtn" class="btn btn-primary btn-lg mr-2">开始抽号</button>
+            </div>
+            <div class="col-auto">
+                <button id="stopBtn" class="btn btn-danger btn-lg" disabled>暂停抽号</button>
+            </div>
+            <div class="col-auto">
+                <button id="setProbBtn" class="btn btn-secondary btn-lg" data-toggle="modal" data-target="#probModal">设置概率</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 概率设置模态框 -->
+    <div class="modal fade" id="probModal" tabindex="-1" role="dialog" aria-labelledby="probModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="probModalLabel">设置概率</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="probInputs" class="row">
+                        <!-- 学号和概率输入框将在这里动态生成 -->
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">密码</span>
+                        </div>
+                        <input type="password" id="password" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="saveProbBtn">保存</button>
+                    <button type="button" class="btn btn-warning" id="resetProbBtn">恢复默认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Bootstrap JS和依赖 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        let intervalId;
+        let min, max;
+        let probabilities = {};
+        let defaultProbabilities = {};
+
+        document.getElementById('startBtn').addEventListener('click', function() {
+            min = parseInt(document.getElementById('min').value);
+            max = parseInt(document.getElementById('max').value);
+
+            if (min >= max) {
+                alert('最小学号必须小于最大学号！');
+                return;
+            }
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+
+            intervalId = setInterval(function() {
+                const randomNum = getRandomNumber();
+                document.getElementById('result').textContent = randomNum;
+            }, 100); // 0.1秒一个
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', function() {
+            clearInterval(intervalId);
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        });
+
+        document.getElementById('setProbBtn').addEventListener('click', function() {
+            min = parseInt(document.getElementById('min').value);
+            max = parseInt(document.getElementById('max').value);
+
+            if (min >= max) {
+                alert('最小学号必须小于最大学号！');
+                return;
+            }
+
+            const probInputsDiv = document.getElementById('probInputs');
+            probInputsDiv.innerHTML = ''; // 清空之前的输入框
+
+            for (let i = min; i <= max; i++) {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'col-3 mb-3';
+
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+
+                const prependDiv = document.createElement('div');
+                prependDiv.className = 'input-group-prepend';
+                prependDiv.innerHTML = `<span class="input-group-text">学号 ${i}</span>`;
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'form-control prob-input';
+                input.value = probabilities[i] || 0;
+                input.dataset.number = i;
+
+                inputGroup.appendChild(prependDiv);
+                inputGroup.appendChild(input);
+                colDiv.appendChild(inputGroup);
+                probInputsDiv.appendChild(colDiv);
+
+                defaultProbabilities[i] = 0; // 默认概率为0
+            }
+        });
+
+        document.getElementById('saveProbBtn').addEventListener('click', function() {
+            const password = document.getElementById('password').value;
+            if (password !== '1711') {
+                alert('密码错误！');
+                return;
+            }
+
+            const probInputs = document.querySelectorAll('.prob-input');
+            probInputs.forEach(input => {
+                const probNumber = parseInt(input.dataset.number);
+                const probValue = parseInt(input.value);
+
+                if (probValue < 0 || probValue > 100) {
+                    alert(`学号 ${probNumber} 的概率值必须在0到100之间！`);
+                    return;
+                }
+
+                probabilities[probNumber] = probValue;
+            });
+
+            alert('概率设置已保存！');
+            $('#probModal').modal('hide');
+        });
+
+        document.getElementById('resetProbBtn').addEventListener('click', function() {
+            const probInputs = document.querySelectorAll('.prob-input');
+            probInputs.forEach(input => {
+                const probNumber = parseInt(input.dataset.number);
+                input.value = defaultProbabilities[probNumber];
+                probabilities[probNumber] = defaultProbabilities[probNumber];
+            });
+
+            alert('概率已恢复为默认值！');
+        });
+
+        function getRandomNumber() {
+            const totalProb = Object.values(probabilities).reduce((sum, prob) => sum + prob, 0);
+            const random = Math.random() * 100;
+
+            let cumulativeProb = 0;
+            for (const [number, prob] of Object.entries(probabilities)) {
+                cumulativeProb += prob;
+                if (random < cumulativeProb) {
+                    return number;
+                }
+            }
+
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    </script>
+
+</body>
+</html>
