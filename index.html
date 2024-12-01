@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>班级随机抽号器</title>
+    <link rel="icon" href="https://wmimg.com/i/1169/2024/12/674c46c8cb5e7.png" type="image/webp">
     <!-- 引入Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -19,9 +20,10 @@
         }
         .container {
             text-align: center;
+            margin-top: 50px; /* 增加顶部边距，使主体内容向下移动 */
         }
         #result {
-            font-size: 64px;
+            font-size: 128px; /* 加大字体大小 */
             margin-top: 20px;
             margin-bottom: 40px;
             color: #007bff;
@@ -31,6 +33,19 @@
         }
         .probability-section {
             margin-top: 40px;
+        }
+        footer {
+            margin-top: auto;
+            padding: 10px;
+            background-color: #e9ecef;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        #customImage {
+            display: none;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -63,7 +78,7 @@
                 <button id="stopBtn" class="btn btn-danger btn-lg" disabled>暂停抽号</button>
             </div>
             <div class="col-auto">
-                <button id="setProbBtn" class="btn btn-secondary btn-lg" data-toggle="modal" data-target="#probModal">设置概率</button>
+                <button id="setProbBtn" class="btn btn-secondary btn-lg" data-toggle="modal" data-target="#probModal">设置</button>
             </div>
         </div>
     </div>
@@ -73,7 +88,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="probModalLabel">设置概率</h5>
+                    <h5 class="modal-title" id="probModalLabel">设置</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -88,6 +103,12 @@
                         </div>
                         <input type="password" id="password" class="form-control">
                     </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="customCheckbox">
+                        <label class="form-check-label" for="customCheckbox">
+                            定制
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
@@ -98,10 +119,15 @@
         </div>
     </div>
 
+    <!-- 显示定制照片的区域 -->
+    <div id="customImage">
+        <img src="https://wmimg.com/i/1169/2024/12/674c478b08c82.png" alt="定制照片" style="max-width: 100%;">
+    </div>
+
     <!-- 引入Bootstrap JS和依赖 -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="/jquery-3.5.1.slim.min.js"></script>
+    <script src="/popper.min.js"></script>
+    <script src="/bootstrap.min.js"></script>
 
     <script>
         let intervalId;
@@ -191,7 +217,7 @@
                 probabilities[probNumber] = probValue;
             });
 
-            alert('概率设置已保存！');
+            alert('设置已保存！');
             $('#probModal').modal('hide');
         });
 
@@ -203,7 +229,12 @@
                 probabilities[probNumber] = defaultProbabilities[probNumber];
             });
 
-            alert('概率已恢复为默认值！');
+            alert('设置已恢复为默认值！');
+        });
+
+        document.getElementById('customCheckbox').addEventListener('change', function() {
+            const customImage = document.getElementById('customImage');
+            customImage.style.display = this.checked ? 'block' : 'none';
         });
 
         function getRandomNumber() {
@@ -222,5 +253,9 @@
         }
     </script>
 
+    <!-- 版权页脚 -->
+    <footer>
+        <p>&copy; 2024 Wu jingbo </p>
+    </footer>
 </body>
 </html>
